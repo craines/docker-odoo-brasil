@@ -1,0 +1,25 @@
+version: '3'
+services:
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: 'postgres'
+      POSTGRES_USER: 'dbuser'
+      POSTGRES_PASSWORD: 'as6d54sda'
+    ports:
+      - "5432:5432"
+  odoo:
+    image: craines/odoo-brasil:15.0
+    ports:
+      - "8069:8069"
+    depends_on:
+      - db
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: dbuser
+      PASSWORD: as6d54sda
+      ODOO_PORT: 8069
+      DB_PORT_5432_TCP_ADDR: db
+      DB_PORT_5432_TCP_PORT: 5432
