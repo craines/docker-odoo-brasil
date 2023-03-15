@@ -1,98 +1,63 @@
-# Trustcode - Oficial docker image for Odoo 
+# Imagem docker do odoo, configurada para os modulos brasileiro 
 
-How do use this docker image ?
----------------------
-
-tldr; Minimal command to run this image
+Comando con as configurações basica
 
 ```bash
-▶ docker run --name odoo --net host -d -e PG_USER=odoo -e PG_PASSWORD=odoo craines/odoo-brasil:15.0
+▶ docker run --name odoo -d -e USER=odoo -e PASSWORD=odoo -e PORT=5432 craines/odoo-brasil:15.0
 ```
 
-Other parameters:
+Todos parametos aceito:
 
-* PG_HOST=localhost
-* PG_PORT=5432
-* PG_USER=odoo
-* PG_PASSWORD=odoo
-* PORT=8069
+* ODOO_PASSWORD=admin
+* HOST=localhost
+* PORT=5432
+* USER=odoo
+* PASSWORD=odoo
+* DATABASE=False
+* DEBUG_MODE=False
+* LIST_DB=True
+* EMAIL_FROM=odoo@teste.com
+* SMTP_PASSWORD=123
+* SMTP_PORT=25
+* SMTP_SERVER=localhost
+* SMTP_SSL=False
+* SMTP_USER=False
+* ODOO_PORT=8069
+* WORKERS=5
+* LOG_FILE=/var/lib/odoo/odoo.log
 * LONGPOLLING_PORT=8072
-* WORKERS=3
-* ODOO_PASSWORD=senha_admin
 * DISABLE_LOGFILE=0
-* ODOO_ENTERPRISE=1
-* TRUSTCODE_ENTERPRISE=1
-* ODOO_VERSION=15.0
+* TIME_CPU=6000
+* TIME_REAL=7200
+* DB_FILTER=False
 
-Example: Switching the port on which Odoo will listen to:
-
-```bash
-▶ docker run --name odoo --net host -d -e PG_USER=odoo -e PG_PASSWORD=odoo -e PORT=8050 craines/odoo-brasil:15.0
-```
-
-Preferred way:
+Rodando com docker compose:
 ---------------------
-
-Install [docker-compose](https://docs.docker.com/compose/install/) to manage docker containers.
-
-Create a docker-compose file following this example:
 ```yaml
 version: '3'
 services:
-  odoo-update:
-    image: craines/odoo-brasil:15.0
-    network_mode: host
-    volumes:
-      - ~/.ssh:/home/temp/.ssh
-      - ~/dados:/opt/dados
+  db:
+    image: postgres:14
+    restart: always
     environment:
-      PG_USER: postgres_user
-      PG_PASSWORD: 123
-      ODOO_VERSION: 15.0
-      ODOO_ENTERPRISE: 1
-      TRUSTCODE_ENTERPRISE: 1
-      DATABASE: database
-      DISABLE_LOGFILE: 1
-      TIME_CPU: 600
-      TIME_REAL: 720
+      POSTGRES_DB: 'postgres'
+      POSTGRES_USER: 'dbuser'
+      POSTGRES_PASSWORD: 'as6d54sda'
+    ports:
+      - "5432:5432"
+  odoo:
+    image: craines/odoo-brasil:15.0
+    ports:
+      - "8069:8069"
+    depends_on:
+      - db
+    environment:
+      HOST: db
+      PORT: 5432
+      USER: dbuser
+      PASSWORD: as6d54sda
+      ODOO_PORT: 8069
 ```
-
-Parameters:
-
-- ODOO_ENTERPRISE - download the enterprise version (it needs a valid ssh key to be mounted under /home/temp/.ssh)
-- TRUSTCODE_ENTERPRISE - download private modules from Trustcode
-- DATABASE - optional database name (required if you use autoupdate command when run the image)
-- DISABLE_LOGFILE - disable odoo logs to a file, instead output to standard (useful with autoupdate)
-- TIME_CPU - cpu limit before timeout
-- TIME_REAL - real limit before timeout
-
-Change the parameters as you want and run:
 ```bash
 ▶ docker-compose up
 ```
-
-Updating the Odoo instance
-----------------------------------
-
-Download the latest version of this docker image and follow below. We run daily builds of this image, it's safer to run this process in your Odoo instance at same periodicity.
-
-If you want to update your Odoo instance just add to your docker-compose file the following command:
-```yaml
-    image: craines/odoo-brasil:15.0
-    command: autoupdate
-    network_mode: host
-```
-But before run this you should install the module "module_auto_update", without the module installed in the database the above command will not update Odoo. More info on the [module](https://github.com/OCA/server-tools/tree/15.0/module_auto_update).
-
-
-Using for development and testing:
------------------------------------
-
-Download this repository, change the environment variables in docker-compose.yml and run:
-```bash
-▶ docker-compose build && docker-compose up
-```
-
-Trustcode Sistemas Empresariais
-----------------
-![Trustcode](http://www.trustcode.com.br/logo.png)
